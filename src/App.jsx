@@ -12,17 +12,19 @@ function App() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto shadow-md rounded-lg px-4 py-3 my-8 bg-slate-200">
-      <h1 className="text-4xl text-black text-center my-3">
-        Password Generator
-      </h1>
-      <PasswordDisplay
-        password={password}
-        copyPasswordToClipboard={copyPasswordToClipboard}
-        passwordRef={passwordRef}
-      />
-      <PasswordOptions setPassword={setPassword} />
-    </div>
+    <main className="w-full h-full flex items-center justify-center">
+      <div className="w-full max-w-md mx-auto shadow-md rounded-lg px-4 py-3 my-8 bg-slate-200">
+        <h1 className="text-4xl text-black text-center my-3">
+          Password Generator
+        </h1>
+        <PasswordDisplay
+          password={password}
+          copyPasswordToClipboard={copyPasswordToClipboard}
+          passwordRef={passwordRef}
+        />
+        <PasswordOptions setPassword={setPassword} />
+      </div>
+    </main>
   );
 }
 
