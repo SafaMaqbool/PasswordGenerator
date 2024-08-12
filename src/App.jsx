@@ -1,38 +1,14 @@
-import { useState,useCallback,useRef } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
-import { useEffect } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 function App() {
-  const passwordRef=useRef()
+  const passwordRef = useRef(null);
   const [password, setPassword] = useState("");
-  const [length, setLength]=useState(6);
-  const [numberAllowed, setNumberAllowed]=useState(false);
-  const [charAllowed, setCharAllowed]=useState(false);
 
-  const generatePassword = useCallback(()=>{
-    let pass= ""
-    let str="ABCDEFGHIJKLMNOPQRSTUVWXabcdefghijklmnoqrstuvwxyz"
-
-    if(numberAllowed) str += "0123456789"
-    if (charAllowed) str +="!#@$%^&*()-+"
-
-    for(let i=1; i<length; i++){
-     const char= Math.floor(Math.random()*str.length+1)
-     pass+=str.charAt(char)
+  const copyPasswordToClipboard = () => {
+    if (password) {
+      navigator.clipboard.writeText(password);
+      passwordRef.current?.select();
     }
-    
-    setPassword(pass)
-  },[length,numberAllowed,charAllowed])
-
-  useEffect(()=>{
-    generatePassword()
-  },[length,numberAllowed,charAllowed])
-
-  const copyPass = () => {
-    window.navigator.clipboard.writeText(password);
-    passwordRef.current?.select()
   };
 
   return (
@@ -40,56 +16,99 @@ function App() {
       <h1 className="text-4xl text-black text-center my-3">
         Password Generator
       </h1>
-      <div className="flex rounded-lg overflow-hidden shadow mb-4">
-        <input
-          className="w-full px-2 py-2"
-          type="text"
-          value={password}
-          placeholder="password"
-          ref={passwordRef}
-          readOnly
-        />
-        <button onClick={copyPass} className="bg-blue-700 text-white px-3 py-0.5 shrink-0">
-          Copy
-        </button>
-      </div>
-      <div className="flex text-sm gap-x-2">
-        <div className="flex items-center gap-x-1">
-          <input
-            type="range"
-            name=""
-            id=""
-            min={6}
-            max={40}
-            value={length}
-            className="cursor-pointer"
-            onChange={(e) => setLength(e.target.value)}
-          />
-          <label htmlFor="length">Length: {length}</label>
-        </div>
-        <div className="flex items-center gap-x-1">
-          <input
-            type="checkbox"
-            defaultChecked={numberAllowed}
-            onChange={() => {
-              setNumberAllowed((prev) => !prev);
-            }}
-          />
-          <label htmlFor="number">Numbers</label>
-        </div>
-        <div className="flex items-center gap-x-1">
-          <input
-            type="checkbox"
-            defaultChecked={charAllowed}
-            onChange={() => {
-              setCharAllowed((prev) => !prev);
-            }}
-          />
-          <label htmlFor="charInput">Characters</label>
-        </div>
-      </div>
+      <PasswordDisplay
+        password={password}
+        copyPasswordToClipboard={copyPasswordToClipboard}
+        passwordRef={passwordRef}
+      />
+      <PasswordOptions setPassword={setPassword} />
     </div>
   );
 }
+
+const PasswordDisplay = ({
+  password,
+  copyPasswordToClipboard,
+  passwordRef,
+}) => (
+  <div className="flex rounded-lg overflow-hidden shadow mb-4">
+    <input
+      className="w-full px-2 py-2"
+      type="text"
+      value={password}
+      placeholder="Generated password"
+      ref={passwordRef}
+      readOnly
+    />
+    <button
+      onClick={copyPasswordToClipboard}
+      className="bg-blue-700 text-white px-3 py-0.5 shrink-0"
+    >
+      Copy
+    </button>
+  </div>
+);
+
+const CheckboxWithLabel = ({ id, label, checked, onChange }) => (
+  <div className="flex items-center gap-x-2">
+    <input id={id} type="checkbox" checked={checked} onChange={onChange} />
+    <label htmlFor={id} className="select-none">
+      {label}
+    </label>
+  </div>
+);
+
+const PasswordOptions = ({ setPassword }) => {
+  const [passwordLength, setPasswordLength] = useState(6);
+  const [includeNumbers, setIncludeNumbers] = useState(false);
+  const [includeSpecialChars, setIncludeSpecialChars] = useState(false);
+
+  const generatePassword = useCallback(() => {
+    let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    if (includeNumbers) characters += "0123456789";
+    if (includeSpecialChars) characters += "!#@$%^&*()-+";
+
+    const pass = Array.from({ length: passwordLength }, () =>
+      characters.charAt(Math.floor(Math.random() * characters.length))
+    ).join("");
+
+    setPassword(pass);
+  }, [passwordLength, includeNumbers, includeSpecialChars, setPassword]);
+
+  useEffect(() => {
+    generatePassword();
+  }, [passwordLength, includeNumbers, includeSpecialChars, generatePassword]);
+
+  return (
+    <div className="flex flex-col gap-y-2">
+      <div className="flex items-center gap-x-2">
+        <label htmlFor="length" className="select-none">
+          Length: {passwordLength}
+        </label>
+        <input
+          id="length"
+          type="range"
+          min={6}
+          max={40}
+          value={passwordLength}
+          className="cursor-pointer"
+          onChange={(e) => setPasswordLength(Number(e.target.value))}
+        />
+      </div>
+      <CheckboxWithLabel
+        id="numbers"
+        label="Include Numbers"
+        checked={includeNumbers}
+        onChange={() => setIncludeNumbers((prev) => !prev)}
+      />
+      <CheckboxWithLabel
+        id="specialChars"
+        label="Include Special Characters"
+        checked={includeSpecialChars}
+        onChange={() => setIncludeSpecialChars((prev) => !prev)}
+      />
+    </div>
+  );
+};
 
 export default App;
